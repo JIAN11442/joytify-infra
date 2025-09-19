@@ -1,0 +1,208 @@
+version: "3"
+
+# Include layer-specific taskfiles
+includes:
+  compute: ./environments/prod/compute/Taskfile.yaml
+  networking: ./environments/prod/networking/Taskfile.yaml
+  platform: ./environments/prod/platform/Taskfile.yaml
+  security: ./environments/prod/security/Taskfile.yaml
+
+tasks:
+  # =============================================================================
+  # MAIN OPERATIONS (Primary tasks for daily use)
+  # =============================================================================
+
+  all:plan:
+    desc: "📋 Plan all infrastructure changes"
+    cmds:
+      - task: compute:cluster:plan
+      - task: networking:ingress:controller:plan
+      - task: platform:config:plan
+      - task: security:credentials:plan
+      - task: security:certificates:manager:plan
+      - task: security:certificates:issuers:plan
+      - task: platform:secrets:plan
+      - task: platform:argocd:plan
+      - task: networking:ingress:rules:plan
+    summary: |
+      Shows planned changes for all infrastructure layers.
+
+  all:validate:
+    desc: "✅ Validate all infrastructure configurations"
+    cmds:
+      - task: compute:cluster:validate
+      - task: networking:ingress:controller:validate
+      - task: platform:config:validate
+      - task: security:credentials:validate
+      - task: security:certificates:manager:validate
+      - task: security:certificates:issuers:validate
+      - task: platform:secrets:validate
+      - task: platform:argocd:validate
+      - task: networking:ingress:rules:validate
+    summary: |
+      Validates all infrastructure layer configurations.
+
+  all:deploy:
+    desc: "🚀 Deploy entire infrastructure stack"
+    cmds:
+      - task: compute:cluster:deploy
+      - task: kubeconfig
+      - task: networking:ingress:controller:deploy
+      - task: platform:config:deploy
+      - task: security:credentials:deploy
+      - task: security:certificates:manager:deploy
+      - task: security:certificates:issuers:deploy
+      - task: platform:secrets:deploy
+      - task: platform:argocd:deploy
+      - task: networking:ingress:rules:deploy
+    summary: |
+      Deploys the complete infrastructure stack in the correct order:
+      1. Bootstrap Kubernetes cluster
+      2. Kubeconfig setup
+      3. Deploy ingress controller
+      4. Deploy security credentials
+      5. Deploy platform configuration
+      6. Deploy security certificates manager
+      7. Deploy security certificates issuers
+      8. Deploy external secrets
+      9. Deploy ArgoCD ingress controller
+      10. Deploy ArgoCD ingress rules
+
+  all:destroy:
+    desc: "💥 Destroy entire infrastructure stack"
+    cmds:
+      - task: networking:ingress:rules:destroy
+      - task: platform:argocd:destroy
+      - task: platform:secrets:destroy
+      - task: security:certificates:issuers:destroy
+      - task: security:certificates:manager:destroy
+      - task: security:credentials:destroy
+      - task: platform:config:destroy
+      - task: networking:ingress:controller:destroy
+      - task: cleanup
+      - task: compute:cluster:destroy
+    summary: |
+      Destroys the complete infrastructure stack in reverse order:
+      1. Destroy ArgoCD ingress rules
+      2. Destroy ArgoCD ingress controller
+      3. Destroy external secrets
+      4. Destroy security certificates issuers
+      5. Destroy security certificates manager
+      6. Destroy security credentials
+      7. Destroy platform configuration
+      8. Destroy ingress controller
+      9. Initial cleanup
+      10. Destroy Kubernetes cluster
+
+  all:output:
+    desc: "📤 Show all infrastructure outputs"
+    cmds:
+      - task: compute:cluster:output
+      - task: networking:ingress:controller:output
+      - task: platform:config:output
+      - task: security:credentials:output
+      - task: security:certificates:manager:output
+      - task: security:certificates:issuers:output
+      - task: platform:secrets:output
+      - task: platform:argocd:output
+      - task: networking:ingress:rules:output
+    summary: |
+      Displays all outputs from all infrastructure layers.
+
+  # =============================================================================
+  # CLUSTER MANAGEMENT (Kubernetes cluster access and maintenance)
+  # =============================================================================
+
+  kubeconfig:
+    desc: "⚙️ Setup kubeconfig for cluster access"
+    dir: "{{.TASKFILE_DIR}}/environments/prod/compute/cluster"
+    cmds:
+      - |
+        echo "✅ Changed directory to: $(pwd)"
+
+        # 檢查 bootstrap 是否已經成功部署
+        if ! terragrunt output kubeconfig_raw >/dev/null 2>&1; then
+          echo "❌ Bootstrap not deployed yet or failed. Skipping kubeconfig setup."
+          exit 0
+        fi
+
+        mkdir -p tmp
+        terragrunt output -raw kubeconfig_raw | tr -d '\r' > tmp/doks-kubeconfig.yaml
+        echo "✅ Created kubeconfig file"
+
+        cp ~/.kube/config ~/.kube/config.backup 2>/dev/null || mkdir -p ~/.kube
+        echo "✅ Backed up existing config"
+
+        export KUBECONFIG=$(pwd)/tmp/doks-kubeconfig.yaml:$HOME/.kube/config
+        kubectl config view --flatten > ~/.kube/config.new
+        mv ~/.kube/config.new ~/.kube/config
+        echo "✅ Merged kubeconfig to ~/.kube/config"
+
+        kubectl get nodes
+    summary: |
+      Sets up kubeconfig for accessing the Kubernetes cluster.
+
+  cleanup:
+    desc: "🧹 Cleanup kubeconfig and temporary files"
+    dir: "{{.TASKFILE_DIR}}/environments/prod/compute/cluster"
+    cmds:
+      - |
+        echo "✅ Changed directory to: $(pwd)"
+
+        # 嘗試獲取 context name，如果失敗則跳過
+        CONTEXT_NAME=$(terragrunt output -raw cluster_context_name 2>/dev/null || echo "")
+
+        if [ -n "$CONTEXT_NAME" ]; then
+          echo "✅ Got context name: $CONTEXT_NAME"
+          kubectl config delete-context $CONTEXT_NAME 2>/dev/null || true
+          kubectl config delete-cluster $CONTEXT_NAME 2>/dev/null || true
+          kubectl config unset users.${CONTEXT_NAME}-admin 2>/dev/null || true
+          echo "✅ Removed context: $CONTEXT_NAME"
+        else
+          echo "⚠️  Could not get context name, skipping kubectl cleanup"
+        fi
+
+        # 恢復備份的 kubeconfig（如果存在）
+        if [ -f ~/.kube/config.backup ]; then
+          mv ~/.kube/config.backup ~/.kube/config
+          echo "✅ Restored ~/.kube/config"
+        else
+          echo "⚠️  No kubeconfig backup found, skipping restore"
+        fi
+
+        # 清理臨時文件
+        rm -rf tmp
+        echo "✅ Removed tmp directory"
+    summary: |
+      Cleans up kubeconfig and removes temporary files after infrastructure destruction.
+
+  # =============================================================================
+  # MONITORING & UTILITIES (Status checking and helper tasks)
+  # =============================================================================
+
+  status:
+    desc: "📊 Check infrastructure status"
+    cmds:
+      - |
+        echo "🔍 Checking infrastructure status..."
+        echo ""
+        echo "📦 Bootstrap Layer:"
+        cd environments/prod/00-bootstrap && terragrunt run --all output 2>/dev/null || echo "  Not deployed"
+        echo ""
+        echo "🏗️ Infrastructure Layer:"
+        cd ../01-infrastructure && terragrunt run --all output 2>/dev/null || echo "  Not deployed"
+        echo ""
+        echo "🔧 Platform Layer:"
+        cd ../02-platform && terragrunt run --all output 2>/dev/null || echo "  Not deployed"
+        echo ""
+        echo "📡 Workload Layer:"
+        cd ../03-workloads && terragrunt run --all output 2>/dev/null || echo "  Not deployed"
+    summary: |
+      Shows the current status of all infrastructure layers.
+
+  help:
+    desc: "📚 Show available tasks and their descriptions"
+    cmds:
+      - task --list
+    summary: |
+      Lists all available tasks with descriptions.

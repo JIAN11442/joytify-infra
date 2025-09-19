@@ -1,0 +1,132 @@
+version: "3"
+
+env:
+  DIR: "{{.TASKFILE_DIR}}"
+  CONFIG_DIR: "{{.DIR}}/config"
+  ARGOCD_DIR: "{{.DIR}}/argocd"
+  SECRETS_DIR: "{{.DIR}}/secrets"
+
+tasks:
+  # =============================================================================
+  # INDIVIDUAL COMPONENTS (Deploy specific services)
+  # =============================================================================
+
+  config:plan:
+    desc: "📋 Plan Cluster Configuration changes"
+    dir: "{{.CONFIG_DIR}}"
+    cmds:
+      - terragrunt plan --non-interactive
+    summary: |
+      Shows planned changes for Cluster Configuration.
+
+  config:validate:
+    desc: "✅ Validate Cluster Configuration configuration"
+    dir: "{{.CONFIG_DIR}}"
+    cmds:
+      - terragrunt validate --non-interactive
+    summary: |
+      Validates the Cluster Configuration configuration.
+
+  config:deploy:
+    desc: "🚀 Deploy only Cluster Configuration"
+    dir: "{{.CONFIG_DIR}}"
+    cmds:
+      - terragrunt apply --non-interactive -auto-approve
+    summary: |
+      Deploys only the Cluster Configuration component.
+
+  config:destroy:
+    desc: "💥 Destroy only Cluster Configuration"
+    dir: "{{.CONFIG_DIR}}"
+    cmds:
+      - terragrunt destroy --non-interactive -auto-approve
+    summary: |
+      Destroys only the Cluster Configuration component.
+
+  config:output:
+    desc: "📤 Show Cluster Configuration outputs"
+    dir: "{{.CONFIG_DIR}}"
+    cmds:
+      - terragrunt output --non-interactive
+    summary: |
+      Displays all outputs from Cluster Configuration.
+
+  secrets:plan:
+    desc: "📋 Plan External Secrets changes"
+    dir: "{{.SECRETS_DIR}}"
+    cmds:
+      - terragrunt plan --non-interactive
+    summary: |
+      Shows planned changes for External Secrets
+  
+  secrets:validate:
+    desc: "✅ Validate External Secrets configuration"
+    dir: "{{.SECRETS_DIR}}"
+    cmds:
+      - terragrunt validate --non-interactive
+    summary: |
+      Validates the External Secrets configuration
+
+  secrets:deploy:
+    desc: "🚀 Deploy only External Secrets"
+    dir: "{{.SECRETS_DIR}}"
+    cmds:
+      - terragrunt apply --non-interactive -auto-approve
+    summary: |
+      Deploys only the External Secrets component
+
+  secrets:destroy:
+    desc: "💥 Destroy only External Secrets"
+    dir: "{{.SECRETS_DIR}}"
+    cmds:
+      - terragrunt destroy --non-interactive -auto-approve
+    summary: |
+      Destroys only the External Secrets component
+
+  secrets:output:
+    desc: "📤 Show External Secrets outputs"
+    dir: "{{.SECRETS_DIR}}"
+    cmds:
+      - terragrunt output --non-interactive
+    summary: |
+      Displays all outputs from External Secrets
+
+  argocd:plan:
+    desc: "📋 Plan ArgoCD changes"
+    dir: "{{.ARGOCD_DIR}}"
+    cmds:
+      - terragrunt plan --non-interactive
+    summary: |
+      Shows planned changes for ArgoCD.
+
+  argocd:validate:
+    desc: "✅ Validate ArgoCD configuration"
+    dir: "{{.ARGOCD_DIR}}"
+    cmds:
+      - terragrunt validate --non-interactive
+    summary: |
+      Validates the ArgoCD configuration.
+
+  argocd:deploy:
+    desc: "🚀 Deploy only ArgoCD"
+    dir: "{{.ARGOCD_DIR}}"
+    cmds:
+      - terragrunt apply --non-interactive -auto-approve
+    summary: |
+      Deploys only the ArgoCD component.
+
+  argocd:destroy:
+    desc: "💥 Destroy only ArgoCD"
+    dir: "{{.ARGOCD_DIR}}"
+    cmds:
+      - terragrunt destroy --non-interactive -auto-approve
+    summary: |
+      Destroys only the ArgoCD component.
+
+  argocd:output:
+    desc: "📤 Show ArgoCD outputs"
+    dir: "{{.ARGOCD_DIR}}"
+    cmds:
+      - terragrunt output --non-interactive
+    summary: |
+      Displays all outputs from ArgoCD.

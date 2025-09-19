@@ -1,0 +1,50 @@
+version: "3"
+
+env:
+  DIR: "{{.TASKFILE_DIR}}"
+  CLUSTER_DIR: "{{.DIR}}/cluster"
+
+tasks:
+  # =============================================================================
+  # INDIVIDUAL COMPONENTS (Deploy specific services)
+  # =============================================================================
+
+  cluster:plan:
+    desc: "📋 Plan Doks Cluster changes"
+    dir: "{{.CLUSTER_DIR}}"
+    cmds:
+      - terragrunt plan --non-interactive
+    summary: |
+      Shows planned changes for Doks Cluster.
+
+  cluster:validate:
+    desc: "✅ Validate Doks Cluster configuration"
+    dir: "{{.CLUSTER_DIR}}"
+    cmds:
+      - terragrunt validate --non-interactive
+    summary: |
+      Validates the Doks Cluster configuration.
+
+  cluster:deploy:
+    desc: "🚀 Deploy only Doks Cluster"
+    dir: "{{.CLUSTER_DIR}}"
+    cmds:
+      - terragrunt apply --non-interactive -auto-approve
+    summary: |
+      Deploys only the Doks Cluster component.
+
+  cluster:destroy:
+    desc: "💥 Destroy only Doks Cluster"
+    dir: "{{.CLUSTER_DIR}}"
+    cmds:
+      - terragrunt destroy --non-interactive -auto-approve
+    summary: |
+      Destroys only the Doks Cluster component.
+
+  cluster:output:
+    desc: "📤 Show Doks Cluster outputs"
+    dir: "{{.CLUSTER_DIR}}"
+    cmds:
+      - terragrunt output --non-interactive
+    summary: |
+      Displays all outputs from Doks Cluster.

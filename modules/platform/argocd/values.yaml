@@ -1,0 +1,30 @@
+global:
+  domain: ${argocd_domain}
+
+controller:
+  clusterRole:
+    create: true
+
+server:
+  service:
+    type: ClusterIP
+  ingress:
+    enabled: false
+  config:
+    url: https://${argocd_domain}
+    application.instanceLabelKey: argocd.argoproj.io/instance
+    accounts.admin: apiKey,login
+    accounts.devops: apiKey,login
+
+configs:
+  rbac:
+    policy.csv: |
+      p, role:admin, clusters, *, */*, allow
+      p, role:admin, repositories, *, */*, allow
+      p, role:admin, applications, *, */*, allow
+      p, role:readonly, clusters, get, */*, allow
+      p, role:readonly, repositories, get, */*, allow
+      p, role:readonly, applications, get, */*, allow
+      g, admin, role:admin
+      g, devops, role:admin
+

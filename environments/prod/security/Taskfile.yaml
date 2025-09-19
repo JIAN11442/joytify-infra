@@ -1,0 +1,132 @@
+version: "3"
+
+env:
+  DIR: "{{.TASKFILE_DIR}}"
+  CERTIFICATES_MANAGER_DIR: "{{.DIR}}/certificates/manager"
+  CERTIFICATES_ISSUERS_DIR: "{{.DIR}}/certificates/issuers"
+  CREDENTIALS_DIR: "{{.DIR}}/credentials"
+
+tasks:
+  # =============================================================================
+  # INDIVIDUAL COMPONENTS (Deploy specific platform services)
+  # =============================================================================
+
+  certificates:manager:plan:
+    desc: "📋 Plan Cert Manager changes"
+    dir: "{{.CERTIFICATES_MANAGER_DIR}}"
+    cmds:
+      - terragrunt plan --non-interactive
+    summary: |
+      Shows planned changes for Cert Manager
+
+  certificates:manager:validate:
+    desc: "✅ Validate Cert Manager configuration"
+    dir: "{{.CERTIFICATES_MANAGER_DIR}}"
+    cmds:
+      - terragrunt validate --non-interactive
+    summary: |
+      Validates the Cert Manager configuration
+
+  certificates:manager:deploy:
+    desc: "🚀 Deploy only Cert Manager"
+    dir: "{{.CERTIFICATES_MANAGER_DIR}}"
+    cmds:
+      - terragrunt apply --non-interactive -auto-approve
+    summary: |
+      Deploys only the Cert Manager component
+
+  certificates:manager:destroy:
+    desc: "💥 Destroy only Cert Manager"
+    dir: "{{.CERTIFICATES_MANAGER_DIR}}"
+    cmds:
+      - terragrunt destroy --non-interactive -auto-approve
+    summary: |
+      Destroys only the Cert Manager component
+
+  certificates:manager:output:
+    desc: "📤 Show Cert Manager outputs"
+    dir: "{{.CERTIFICATES_MANAGER_DIR}}"
+    cmds:
+      - terragrunt output --non-interactive
+    summary: |
+      Displays all outputs from Cert Manager
+
+  certificates:issuers:plan:
+    desc: "📋 Plan Cert Issuers changes"
+    dir: "{{.CERTIFICATES_ISSUERS_DIR}}"
+    cmds:
+      - terragrunt plan --non-interactive
+    summary: |
+      Shows planned changes for Cert Issuers
+
+  certificates:issuers:validate:
+    desc: "✅ Validate Cert Issuers configuration"
+    dir: "{{.CERTIFICATES_ISSUERS_DIR}}"
+    cmds:
+      - terragrunt validate --non-interactive
+    summary: |
+      Validates the Cert Issuers configuration
+
+  certificates:issuers:deploy:
+    desc: "🚀 Deploy only Cert Issuers"
+    dir: "{{.CERTIFICATES_ISSUERS_DIR}}"
+    cmds:
+      - terragrunt apply --non-interactive -auto-approve
+    summary: |
+      Deploys only the Cert Issuers component
+
+  certificates:issuers:destroy:
+    desc: "💥 Destroy only Cert Issuers"
+    dir: "{{.CERTIFICATES_ISSUERS_DIR}}"
+    cmds:
+      - terragrunt destroy --non-interactive -auto-approve
+    summary: |
+      Destroys only the Cert Issuers component
+
+  certificates:issuers:output:
+    desc: "📤 Show Cert Issuers outputs"
+    dir: "{{.CERTIFICATES_ISSUERS_DIR}}"
+    cmds:
+      - terragrunt output --non-interactive
+    summary: |
+      Displays all outputs from Cert Issuers
+
+  credentials:plan:
+    desc: "📋 Plan Credentials changes"
+    dir: "{{.CREDENTIALS_DIR}}"
+    cmds:
+      - terragrunt plan --non-interactive
+    summary: |
+      Shows planned changes for Credentials
+
+  credentials:validate:
+    desc: "✅ Validate Credentials configuration"
+    dir: "{{.CREDENTIALS_DIR}}"
+    cmds:
+      - terragrunt validate --non-interactive
+    summary: |
+      Validates the Credentials configuration
+
+  credentials:deploy:
+    desc: "🚀 Deploy only Credentials"
+    dir: "{{.CREDENTIALS_DIR}}"
+    cmds:
+      - terragrunt apply --non-interactive -auto-approve
+    summary: |
+      Deploys only the Credentials component
+
+  credentials:destroy:
+    desc: "💥 Destroy only Credentials"
+    dir: "{{.CREDENTIALS_DIR}}"
+    cmds:
+      - terragrunt destroy --non-interactive -auto-approve
+    summary: |
+      Destroys only the Credentials component
+
+  credentials:output:
+    desc: "📤 Show Credentials outputs"
+    dir: "{{.CREDENTIALS_DIR}}"
+    cmds:
+      - terragrunt output --non-interactive
+    summary: |
+      Displays all outputs from Credentials
