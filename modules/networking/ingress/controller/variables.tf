@@ -16,6 +16,7 @@ variable "ingress_version" {
   default     = "4.0.6"
 }
 
+
 # cluster configuration variables for provider (provider.global.tf)
 variable "cluster_endpoint" {
   description = "Kubernetes cluster endpoint"

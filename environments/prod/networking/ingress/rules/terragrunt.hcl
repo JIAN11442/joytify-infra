@@ -30,27 +30,8 @@ dependency "config" {
   config_path = "${local.config_path}"
 
   mock_outputs = {
-    # 域名
-    api_domain    = "api.127.0.0.1.nip.io"
-    web_domain    = "web.127.0.0.1.nip.io"
-    argocd_domain = "argocd.127.0.0.1.nip.io"
-
-    # 端口
-    api_port = 3000
-    web_port = 5173
-
-    # 命名空间
-    api_namespace    = "api"
-    web_namespace    = "web"
     argocd_namespace = "argocd"
-
-    # 服务名称
-    api_service_name = "api-service"
-    web_service_name = "web-service"
-
-    # 服务端口
-    api_service_port = 3000
-    web_service_port = 5173
+    argocd_domain    = "argocd.127.0.0.1.nip.io"
   }
 }
 
@@ -61,20 +42,6 @@ dependency "cert_issuers" {
 }
 
 inputs = {
-  # api_ingress_name      = "api-ingress"
-  # api_tls_secret_name   = "api-tls-secret"
-  # api_ingress_namespace = dependency.config.outputs.api_namespace
-  # api_domain            = dependency.config.outputs.api_domain
-  # api_service_name      = dependency.config.outputs.api_service_name
-  # api_service_port      = dependency.config.outputs.api_service_port
-
-  # web_ingress_name      = "web-ingress"
-  # web_tls_secret_name   = "web-tls-secret"
-  # web_ingress_namespace = dependency.config.outputs.web_namespace
-  # web_domain            = dependency.config.outputs.web_domain
-  # web_service_name      = dependency.config.outputs.web_service_name
-  # web_service_port      = dependency.config.outputs.web_service_port
-
   argocd_ingress_name      = "argocd-ingress"
   argocd_tls_secret_name   = "argocd-tls-secret"
   argocd_ingress_namespace = dependency.config.outputs.argocd_namespace
@@ -83,7 +50,7 @@ inputs = {
   argocd_service_port      = 443
 
   # letsencrypt clusterIssuer configuration - change to "letsencrypt-prod" for production
-  cluster_issuer = "letsencrypt-staging"
+  cluster_issuer = "letsencrypt-prod"
 
   cluster_endpoint       = dependency.cluster.outputs.cluster_endpoint
   cluster_token          = dependency.cluster.outputs.cluster_token

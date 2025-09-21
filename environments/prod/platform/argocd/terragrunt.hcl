@@ -31,8 +31,8 @@ dependency "config" {
   config_path = "${local.config_path}"
 
   mock_outputs = {
-    argocd_domain    = "argocd.127.0.0.1.nip.io"
     argocd_namespace = "argocd"
+    argocd_domain    = "argocd.127.0.0.1.nip.io"
   }
 }
 

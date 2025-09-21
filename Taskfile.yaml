@@ -16,8 +16,8 @@ tasks:
     desc: "📋 Plan all infrastructure changes"
     cmds:
       - task: compute:cluster:plan
-      - task: networking:ingress:controller:plan
       - task: platform:config:plan
+      - task: networking:ingress:controller:plan
       - task: security:credentials:plan
       - task: security:certificates:manager:plan
       - task: security:certificates:issuers:plan
@@ -47,8 +47,8 @@ tasks:
     cmds:
       - task: compute:cluster:deploy
       - task: kubeconfig
-      - task: networking:ingress:controller:deploy
       - task: platform:config:deploy
+      - task: networking:ingress:controller:deploy
       - task: security:credentials:deploy
       - task: security:certificates:manager:deploy
       - task: security:certificates:issuers:deploy
@@ -59,9 +59,9 @@ tasks:
       Deploys the complete infrastructure stack in the correct order:
       1. Bootstrap Kubernetes cluster
       2. Kubeconfig setup
-      3. Deploy ingress controller
-      4. Deploy security credentials
-      5. Deploy platform configuration
+      3. Deploy platform configuration
+      4. Deploy ingress controller
+      5. Deploy security credentials
       6. Deploy security certificates manager
       7. Deploy security certificates issuers
       8. Deploy external secrets
@@ -77,8 +77,8 @@ tasks:
       - task: security:certificates:issuers:destroy
       - task: security:certificates:manager:destroy
       - task: security:credentials:destroy
-      - task: platform:config:destroy
       - task: networking:ingress:controller:destroy
+      - task: platform:config:destroy
       - task: cleanup
       - task: compute:cluster:destroy
     summary: |
@@ -89,8 +89,8 @@ tasks:
       4. Destroy security certificates issuers
       5. Destroy security certificates manager
       6. Destroy security credentials
-      7. Destroy platform configuration
-      8. Destroy ingress controller
+      7. Destroy ingress controller
+      8. Destroy platform configuration
       9. Initial cleanup
       10. Destroy Kubernetes cluster
 
@@ -98,8 +98,8 @@ tasks:
     desc: "📤 Show all infrastructure outputs"
     cmds:
       - task: compute:cluster:output
-      - task: networking:ingress:controller:output
       - task: platform:config:output
+      - task: networking:ingress:controller:output
       - task: security:credentials:output
       - task: security:certificates:manager:output
       - task: security:certificates:issuers:output

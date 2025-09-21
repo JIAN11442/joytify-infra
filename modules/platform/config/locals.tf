@@ -4,9 +4,9 @@ locals {
 
   # Domain configuration
   domains = {
-    web_domain    = "${var.loadbalancer_ip}.nip.io"
-    api_domain    = "api.${var.loadbalancer_ip}.nip.io"
-    argocd_domain = "argocd.${var.loadbalancer_ip}.nip.io"
+    web_domain    = local.existing_secrets["WEB_DOMAIN"]
+    api_domain    = local.existing_secrets["API_DOMAIN"]
+    argocd_domain = local.existing_secrets["ARGOCD_DOMAIN"]
   }
 
   # Service configuration
@@ -35,4 +35,7 @@ locals {
     api_namespace    = "api"
     argocd_namespace = "argocd"
   }
+
+  # Other configuration
+  certificate_email = local.existing_secrets["CERTIFICATE_EMAIL"]
 }

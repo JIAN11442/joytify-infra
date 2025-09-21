@@ -1,10 +1,9 @@
 # 全局配置
 locals {
   # 項目資訊
-  project_name   = "joytify"
-  project_owner  = "jian11442"
-  cluster_name   = "${local.project_name}-doks-prod-cluster"
-  official_email = "joytify35@gmail.com"
+  project_name  = "joytify"
+  project_owner = "jian11442"
+  cluster_name  = "${local.project_name}-doks-prod-cluster"
 
   # 雲服務商配置
   aws_region      = "ap-northeast-1"
@@ -67,8 +66,7 @@ generate "locals" {
 
 # 全局變數配置
 inputs = {
-  cluster_name       = local.cluster_name
-  aws_region         = local.aws_region
-  aws_secret_name    = local.aws_secret_name
-  cert_manager_email = local.official_email
+  cluster_name    = local.cluster_name
+  aws_region      = local.aws_region
+  aws_secret_name = local.aws_secret_name
 }

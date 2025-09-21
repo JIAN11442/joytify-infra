@@ -8,6 +8,7 @@ locals {
 
   source_path  = "${local.modules_path}/security/certificates/issuers"
   cluster_path = "${local.envs_prod_path}/compute/cluster"
+  config_path  = "${local.envs_prod_path}/platform/config"
   manager_path = "${local.envs_prod_path}/security/certificates/manager"
 }
 
@@ -25,6 +26,14 @@ dependency "cluster" {
   }
 }
 
+dependency "config" {
+  config_path = "${local.config_path}"
+
+  mock_outputs = {
+    certificate_email = "joytify35@gmail.com"
+  }
+}
+
 dependency "manager" {
   config_path = "${local.manager_path}"
 
@@ -35,6 +44,7 @@ dependency "manager" {
 
 inputs = {
   cert_manager_ready = dependency.manager.outputs.cert_manager_ready
+  cert_manager_email = dependency.config.outputs.certificate_email
 
   cluster_endpoint       = dependency.cluster.outputs.cluster_endpoint
   cluster_token          = dependency.cluster.outputs.cluster_token
