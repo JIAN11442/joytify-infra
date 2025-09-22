@@ -18,6 +18,12 @@ variable "argocd_domain" {
   type        = string
 }
 
+variable "argocd_service_port" {
+  description = "Port for the argocd service"
+  type        = number
+}
+
+
 # cluster configuration variables for provider (provider.global.tf)
 variable "cluster_endpoint" {
   description = "Kubernetes cluster endpoint"

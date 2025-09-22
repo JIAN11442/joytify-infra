@@ -3,8 +3,9 @@ version: "3"
 env:
   DIR: "{{.TASKFILE_DIR}}"
   CONFIG_DIR: "{{.DIR}}/config"
-  ARGOCD_DIR: "{{.DIR}}/argocd"
   SECRETS_DIR: "{{.DIR}}/secrets"
+  ARGOCD_DIR: "{{.DIR}}/argocd"
+  GITOPS_DIR: "{{.DIR}}/gitops"
 
 tasks:
   # =============================================================================
@@ -58,7 +59,7 @@ tasks:
       - terragrunt plan --non-interactive
     summary: |
       Shows planned changes for External Secrets
-  
+
   secrets:validate:
     desc: "✅ Validate External Secrets configuration"
     dir: "{{.SECRETS_DIR}}"
@@ -130,3 +131,43 @@ tasks:
       - terragrunt output --non-interactive
     summary: |
       Displays all outputs from ArgoCD.
+
+  gitops:plan:
+    desc: "📋 Plan GitOps changes"
+    dir: "{{.GITOPS_DIR}}"
+    cmds:
+      - terragrunt plan --non-interactive
+    summary: |
+      Shows planned changes for GitOps
+
+  gitops:validate:
+    desc: "✅ Validate GitOps configuration"
+    dir: "{{.GITOPS_DIR}}"
+    cmds:
+      - terragrunt validate --non-interactive
+    summary: |
+      Validates the GitOps configuration
+
+  gitops:deploy:
+    desc: "🚀 Deploy only GitOps"
+    dir: "{{.GITOPS_DIR}}"
+    cmds:
+      - terragrunt apply --non-interactive -auto-approve
+    summary: |
+      Deploys only the GitOps component
+
+  gitops:destroy:
+    desc: "💥 Destroy only GitOps"
+    dir: "{{.GITOPS_DIR}}"
+    cmds:
+      - terragrunt destroy --non-interactive -auto-approve
+    summary: |
+      Destroys only the GitOps component
+
+  gitops:output:
+    desc: "📤 Show GitOps outputs"
+    dir: "{{.GITOPS_DIR}}"
+    cmds:
+      - terragrunt output --non-interactive
+    summary: |
+      Displays all outputs from GitOps

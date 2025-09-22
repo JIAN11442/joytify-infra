@@ -66,8 +66,21 @@ output "aws_credential_secret_key" {
   value = local.keys.aws_credential_secret_key
 }
 
+
+# TOKENS
+output "argocd_repo_token" {
+  value = local.tokens.argocd_repo_token
+  sensitive = true
+}
+
+
 # OTHER
 output "certificate_email" {
   value     = local.certificate_email
+  sensitive = true
+}
+
+output "cloudflare_zone_id" {
+  value     = local.cloudflare_zone_id
   sensitive = true
 }

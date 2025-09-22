@@ -36,6 +36,12 @@ locals {
     argocd_namespace = "argocd"
   }
 
+  # Token configuration
+  tokens = {
+    argocd_repo_token = local.existing_secrets["ARGOCD_REPO_TOKEN"]
+  }
+
   # Other configuration
   certificate_email = local.existing_secrets["CERTIFICATE_EMAIL"]
+  cloudflare_zone_id = local.existing_secrets["CLOUDFLARE_ZONE_ID"]
 }

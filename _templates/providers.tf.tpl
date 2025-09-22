@@ -19,3 +19,15 @@ provider "helm" {
     cluster_ca_certificate = base64decode(var.cluster_ca_certificate)
   }
 }
+
+provider "cloudflare" {
+  api_token = local.cloudflare_token
+}
+
+provider "argocd" {
+  server_addr = var.argocd_server_addr
+  username    = var.argocd_username
+  password    = var.argocd_password
+  insecure    = false
+  grpc_web    = true
+}

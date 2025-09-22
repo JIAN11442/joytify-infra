@@ -21,5 +21,13 @@ terraform {
       source  = "hashicorp/helm"
       version = "= 2.17.0"
     }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "~> 5"
+    }
+    argocd = {
+      source  = "argoproj-labs/argocd"
+      version = "~> 6.0"
+    }
   }
 }

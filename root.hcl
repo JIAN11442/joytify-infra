@@ -1,9 +1,10 @@
 # 全局配置
 locals {
   # 項目資訊
-  project_name  = "joytify"
-  project_owner = "jian11442"
-  cluster_name  = "${local.project_name}-doks-prod-cluster"
+  project_name    = "joytify-infra"
+  project_owner   = "jian11442"
+  github_username = "JIAN11442"
+  cluster_name    = "${local.project_name}-doks-prod-cluster"
 
   # 雲服務商配置
   aws_region      = "ap-northeast-1"
@@ -69,4 +70,5 @@ inputs = {
   cluster_name    = local.cluster_name
   aws_region      = local.aws_region
   aws_secret_name = local.aws_secret_name
+  github_username = local.github_username
 }

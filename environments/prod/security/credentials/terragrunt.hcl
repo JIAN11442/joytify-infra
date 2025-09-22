@@ -17,10 +17,25 @@ terraform {
 
 dependency "cluster" {
   config_path = "${local.cluster_path}"
+
+  mock_outputs = {
+    cluster_endpoint       = "https://mock-k8s-api.example.com"
+    cluster_token          = "mock-token"
+    cluster_ca_certificate = "bW9jay1jYS1jZXJ0Cg=="
+  }
 }
 
 dependency "config" {
   config_path = "${local.config_path}"
+
+  mock_outputs = {
+    web_namespace             = "web"
+    api_namespace             = "api"
+    aws_credentials_name      = "aws-credentials"
+    aws_credential_id_key     = "access-key-id"
+    aws_credential_secret_key = "secret-access-key"
+    ghcr_secret_name          = "ghcr-secret"
+  }
 }
 
 inputs = {
@@ -31,7 +46,6 @@ inputs = {
   aws_credential_secret_key = dependency.config.outputs.aws_credential_secret_key
 
   ghcr_secret_name = dependency.config.outputs.ghcr_secret_name
-  github_username  = "JIAN11442"
 
   cluster_endpoint       = dependency.cluster.outputs.cluster_endpoint
   cluster_token          = dependency.cluster.outputs.cluster_token

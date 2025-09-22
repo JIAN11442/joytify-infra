@@ -49,10 +49,11 @@ dependency "secrets" {
 }
 
 inputs = {
-  argocd_name      = "argocd"
-  argocd_namespace = dependency.config.outputs.argocd_namespace
-  argocd_version   = "4.5.2"
-  argocd_domain    = dependency.config.outputs.argocd_domain
+  argocd_name         = "argocd"
+  argocd_namespace    = dependency.config.outputs.argocd_namespace
+  argocd_version      = "4.5.2"
+  argocd_domain       = dependency.config.outputs.argocd_domain
+  argocd_service_port = 443
 
   cluster_endpoint       = dependency.cluster.outputs.cluster_endpoint
   cluster_token          = dependency.cluster.outputs.cluster_token

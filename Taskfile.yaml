@@ -18,12 +18,14 @@ tasks:
       - task: compute:cluster:plan
       - task: platform:config:plan
       - task: networking:ingress:controller:plan
+      - task: networking:dns:plan
       - task: security:credentials:plan
       - task: security:certificates:manager:plan
       - task: security:certificates:issuers:plan
       - task: platform:secrets:plan
       - task: platform:argocd:plan
       - task: networking:ingress:rules:plan
+      - task: platform:gitops:plan
     summary: |
       Shows planned changes for all infrastructure layers.
 
@@ -31,14 +33,16 @@ tasks:
     desc: "✅ Validate all infrastructure configurations"
     cmds:
       - task: compute:cluster:validate
-      - task: networking:ingress:controller:validate
       - task: platform:config:validate
+      - task: networking:ingress:controller:validate
+      - task: networking:dns:validate
       - task: security:credentials:validate
       - task: security:certificates:manager:validate
       - task: security:certificates:issuers:validate
       - task: platform:secrets:validate
       - task: platform:argocd:validate
       - task: networking:ingress:rules:validate
+      - task: platform:gitops:validate
     summary: |
       Validates all infrastructure layer configurations.
 
@@ -49,50 +53,60 @@ tasks:
       - task: kubeconfig
       - task: platform:config:deploy
       - task: networking:ingress:controller:deploy
+      - task: networking:dns:deploy
       - task: security:credentials:deploy
       - task: security:certificates:manager:deploy
       - task: security:certificates:issuers:deploy
       - task: platform:secrets:deploy
       - task: platform:argocd:deploy
       - task: networking:ingress:rules:deploy
+      - task: platform:gitops:deploy
     summary: |
       Deploys the complete infrastructure stack in the correct order:
       1. Bootstrap Kubernetes cluster
       2. Kubeconfig setup
       3. Deploy platform configuration
       4. Deploy ingress controller
-      5. Deploy security credentials
-      6. Deploy security certificates manager
-      7. Deploy security certificates issuers
-      8. Deploy external secrets
-      9. Deploy ArgoCD ingress controller
-      10. Deploy ArgoCD ingress rules
+      5. Deploy DNS
+      6. Deploy security credentials
+      7. Deploy security certificates manager
+      8. Deploy security certificates issuers
+      9. Deploy external secrets
+      10. Deploy ArgoCD ingress controller
+      11. Deploy ArgoCD ingress rules
+      12. Deploy ArgoCD github repository and applications
 
   all:destroy:
     desc: "💥 Destroy entire infrastructure stack"
     cmds:
+      - task: platform:gitops:destroy
       - task: networking:ingress:rules:destroy
       - task: platform:argocd:destroy
       - task: platform:secrets:destroy
       - task: security:certificates:issuers:destroy
       - task: security:certificates:manager:destroy
       - task: security:credentials:destroy
+      - task: networking:dns:destroy
       - task: networking:ingress:controller:destroy
       - task: platform:config:destroy
-      - task: cleanup
+      - task: cleanup-kubeconfig
       - task: compute:cluster:destroy
+      - task: cleanup-state
     summary: |
       Destroys the complete infrastructure stack in reverse order:
-      1. Destroy ArgoCD ingress rules
-      2. Destroy ArgoCD ingress controller
-      3. Destroy external secrets
-      4. Destroy security certificates issuers
-      5. Destroy security certificates manager
-      6. Destroy security credentials
-      7. Destroy ingress controller
-      8. Destroy platform configuration
-      9. Initial cleanup
-      10. Destroy Kubernetes cluster
+      1. Destroy ArgoCD github repository and applications
+      2. Destroy ArgoCD ingress rules
+      3. Destroy ArgoCD ingress controller
+      4. Destroy external secrets
+      5. Destroy security certificates issuers
+      6. Destroy security certificates manager
+      7. Destroy security credentials
+      8. Destroy DNS
+      9. Destroy ingress controller
+      10. Destroy platform configuration
+      11. Initial cleanup
+      12. Destroy Kubernetes cluster
+      13. Clean up Terraform backend resources
 
   all:output:
     desc: "📤 Show all infrastructure outputs"
@@ -100,12 +114,14 @@ tasks:
       - task: compute:cluster:output
       - task: platform:config:output
       - task: networking:ingress:controller:output
+      - task: networking:dns:output
       - task: security:credentials:output
       - task: security:certificates:manager:output
       - task: security:certificates:issuers:output
       - task: platform:secrets:output
       - task: platform:argocd:output
       - task: networking:ingress:rules:output
+      - task: platform:gitops:output
     summary: |
       Displays all outputs from all infrastructure layers.
 
@@ -142,8 +158,8 @@ tasks:
     summary: |
       Sets up kubeconfig for accessing the Kubernetes cluster.
 
-  cleanup:
-    desc: "🧹 Cleanup kubeconfig and temporary files"
+  cleanup-kubeconfig:
+    desc: "⚙️ Cleanup kubeconfig and temporary files"
     dir: "{{.TASKFILE_DIR}}/environments/prod/compute/cluster"
     cmds:
       - |
@@ -177,7 +193,60 @@ tasks:
       Cleans up kubeconfig and removes temporary files after infrastructure destruction.
 
   # =============================================================================
-  # MONITORING & UTILITIES (Status checking and helper tasks)
+  # BACKEND RESOURCE MANAGEMENT
+  # =============================================================================
+
+  cleanup-state:
+    desc: "🗄️ Clean up Terraform state resources (S3 bucket and DynamoDB table)"
+    cmds:
+      - |
+        echo "🧹 Cleaning up Terraform backend resources..."
+        echo ""
+
+        # 檢查並刪除 S3 bucket
+        BUCKET_NAME="joytify-tfstate-bucket"
+        echo "📦 Checking S3 bucket: $BUCKET_NAME"
+        if aws s3 ls "s3://$BUCKET_NAME" 2>/dev/null; then
+          echo "🗑️  Deleting S3 bucket: $BUCKET_NAME"
+          
+          # 檢查版本控制狀態
+          VERSIONING=$(aws s3api get-bucket-versioning --bucket "$BUCKET_NAME" --query 'Status' --output text 2>/dev/null || echo "Disabled")
+          if [ "$VERSIONING" = "Enabled" ]; then
+            echo "⚠️  Bucket has versioning enabled, suspending versioning first..."
+            aws s3api put-bucket-versioning --bucket "$BUCKET_NAME" --versioning-configuration Status=Suspended 2>/dev/null
+            sleep 2
+          fi
+          
+          # 刪除所有版本和刪除標記
+          echo "🗑️  Removing all object versions and delete markers..."
+          aws s3api delete-objects --bucket "$BUCKET_NAME" --delete "$(aws s3api list-object-versions --bucket "$BUCKET_NAME" --output json --query '{Objects: Versions[].{Key:Key,VersionId:VersionId}}')" 2>/dev/null || true
+          aws s3api delete-objects --bucket "$BUCKET_NAME" --delete "$(aws s3api list-object-versions --bucket "$BUCKET_NAME" --output json --query '{Objects: DeleteMarkers[].{Key:Key,VersionId:VersionId}}')" 2>/dev/null || true
+          
+          # 現在嘗試刪除 bucket
+          aws s3 rb "s3://$BUCKET_NAME" --force 2>/dev/null && echo "✅ S3 bucket deleted successfully" || echo "⚠️  Failed to delete S3 bucket"
+        else
+          echo "✅ S3 bucket $BUCKET_NAME not found or already deleted"
+        fi
+
+        echo ""
+
+        # 檢查並刪除 DynamoDB table
+        TABLE_NAME="joytify-tfstate-lock-table"
+        echo "🗄️  Checking DynamoDB table: $TABLE_NAME"
+        if aws dynamodb describe-table --table-name "$TABLE_NAME" --region ap-northeast-1 2>/dev/null; then
+          echo "🗑️  Deleting DynamoDB table: $TABLE_NAME"
+          aws dynamodb delete-table --table-name "$TABLE_NAME" --region ap-northeast-1 2>/dev/null && echo "✅ DynamoDB table deleted successfully" || echo "⚠️  Failed to delete DynamoDB table"
+        else
+          echo "✅ DynamoDB table $TABLE_NAME not found or already deleted"
+        fi
+
+        echo ""
+        echo "🎉 Backend cleanup completed"
+    summary: |
+      Manually cleans up Terraform backend resources (S3 bucket and DynamoDB table)
+
+  # =============================================================================
+  # OTHER
   # =============================================================================
 
   status:

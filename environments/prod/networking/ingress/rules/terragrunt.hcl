@@ -10,6 +10,7 @@ locals {
   cluster_path      = "${local.envs_prod_path}/compute/cluster"
   config_path       = "${local.envs_prod_path}/platform/config"
   cert_issuers_path = "${local.envs_prod_path}/security/certificates/issuers"
+  argocd_path       = "${local.envs_prod_path}/platform/argocd"
 }
 
 terraform {
@@ -41,13 +42,21 @@ dependency "cert_issuers" {
   mock_outputs = {}
 }
 
+dependency "argocd" {
+  config_path = "${local.argocd_path}"
+
+  mock_outputs = {
+    service_port = 443
+  }
+}
+
 inputs = {
   argocd_ingress_name      = "argocd-ingress"
   argocd_tls_secret_name   = "argocd-tls-secret"
   argocd_ingress_namespace = dependency.config.outputs.argocd_namespace
   argocd_domain            = dependency.config.outputs.argocd_domain
   argocd_service_name      = "argocd-server"
-  argocd_service_port      = 443
+  argocd_service_port      = dependency.argocd.outputs.service_port
 
   # letsencrypt clusterIssuer configuration - change to "letsencrypt-prod" for production
   cluster_issuer = "letsencrypt-prod"

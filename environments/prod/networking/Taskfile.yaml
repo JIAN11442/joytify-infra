@@ -4,6 +4,7 @@ env:
   DIR: "{{.TASKFILE_DIR}}"
   CONTROLLER_DIR: "{{.DIR}}/ingress/controller"
   RULES_DIR: "{{.DIR}}/ingress/rules"
+  DNS_DIR: "{{.DIR}}/dns"
 
 tasks:
   # =============================================================================
@@ -89,3 +90,43 @@ tasks:
       - terragrunt output --non-interactive
     summary: |
       Displays all outputs from Ingress Rules.
+
+  dns:plan:
+    desc: "📋 Plan DNS changes"
+    dir: "{{.DNS_DIR}}"
+    cmds:
+      - terragrunt plan --non-interactive
+    summary: |
+      Shows planned changes for DNS
+
+  dns:validate:
+    desc: "✅ Validate DNS configuration"
+    dir: "{{.DNS_DIR}}"
+    cmds:
+      - terragrunt validate --non-interactive
+    summary: |
+      Validates the DNS configuration
+
+  dns:deploy:
+    desc: "🚀 Deploy only DNS"
+    dir: "{{.DNS_DIR}}"
+    cmds:
+      - terragrunt apply --non-interactive -auto-approve
+    summary: |
+      Deploys only the DNS component
+
+  dns:destroy:
+    desc: "💥 Destroy only DNS"
+    dir: "{{.DNS_DIR}}"
+    cmds:
+      - terragrunt destroy --non-interactive -auto-approve
+    summary: |
+      Destroys only the DNS component
+
+  dns:output:
+    desc: "📤 Show DNS outputs"
+    dir: "{{.DNS_DIR}}"
+    cmds:
+      - terragrunt output --non-interactive
+    summary: |
+      Displays all outputs from DNS
