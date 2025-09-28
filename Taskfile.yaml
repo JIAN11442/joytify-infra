@@ -241,9 +241,17 @@ tasks:
         fi
 
         echo ""
+
+        # 清理 Terraform 和 Terragrunt 緩存
+        echo "🧹 Cleaning up Terraform and Terragrunt cache..."
+        find . -name ".terragrunt-cache" -type d -exec rm -rf {} + 2>/dev/null || true
+        find . -name ".terraform" -type d -exec rm -rf {} + 2>/dev/null || true
+        echo "✅ Cache cleanup completed"
+
+        echo ""
         echo "🎉 Backend cleanup completed"
     summary: |
-      Manually cleans up Terraform backend resources (S3 bucket and DynamoDB table)
+      Manually cleans up Terraform backend resources (S3 bucket, DynamoDB table) and local cache
 
   # =============================================================================
   # OTHER
@@ -255,17 +263,17 @@ tasks:
       - |
         echo "🔍 Checking infrastructure status..."
         echo ""
-        echo "📦 Bootstrap Layer:"
-        cd environments/prod/00-bootstrap && terragrunt run --all output 2>/dev/null || echo "  Not deployed"
+        echo "🖥️ Compute Layer:"
+        cd environments/prod/compute && terragrunt run-all output 2>/dev/null || echo "  Not deployed"
         echo ""
-        echo "🏗️ Infrastructure Layer:"
-        cd ../01-infrastructure && terragrunt run --all output 2>/dev/null || echo "  Not deployed"
+        echo "🌐 Networking Layer:"
+        cd ../networking && terragrunt run-all output 2>/dev/null || echo "  Not deployed"
         echo ""
         echo "🔧 Platform Layer:"
-        cd ../02-platform && terragrunt run --all output 2>/dev/null || echo "  Not deployed"
+        cd ../platform && terragrunt run-all output 2>/dev/null || echo "  Not deployed"
         echo ""
-        echo "📡 Workload Layer:"
-        cd ../03-workloads && terragrunt run --all output 2>/dev/null || echo "  Not deployed"
+        echo "🔒 Security Layer:"
+        cd ../security && terragrunt run-all output 2>/dev/null || echo "  Not deployed"
     summary: |
       Shows the current status of all infrastructure layers.
 
