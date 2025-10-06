@@ -60,6 +60,9 @@ tasks:
       - task: platform:secrets:deploy
       - task: platform:argocd:deploy
       - task: networking:ingress:rules:deploy
+      - echo "⏳ Waiting 30s for ArgoCD TLS certificate..."
+      - sleep 30
+      - echo "✅ Continue deployment"
       - task: platform:gitops:deploy
     summary: |
       Deploys the complete infrastructure stack in the correct order:

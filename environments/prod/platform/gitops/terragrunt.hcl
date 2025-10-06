@@ -6,9 +6,10 @@ locals {
   modules_path   = find_in_parent_folders("modules/")
   envs_prod_path = find_in_parent_folders("environments/prod/")
 
-  source_path = "${local.modules_path}/platform/gitops"
-  config_path = "${local.envs_prod_path}/platform/config"
-  argocd_path = "${local.envs_prod_path}/platform/argocd"
+  source_path        = "${local.modules_path}/platform/gitops"
+  config_path        = "${local.envs_prod_path}/platform/config"
+  argocd_path        = "${local.envs_prod_path}/platform/argocd"
+  ingress_rules_path = "${local.envs_prod_path}/networking/ingress/rules"
 }
 
 terraform {
@@ -27,6 +28,12 @@ dependency "argocd" {
     admin_username = "admin"
     admin_password = "password"
   }
+}
+
+dependency "ingress_rules" {
+  config_path = "${local.ingress_rules_path}"
+
+  mock_outputs = {}
 }
 
 inputs = {
