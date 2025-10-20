@@ -18,7 +18,7 @@ inputs = {
   # do_token 已經透過全域 provider 定義了
   # cluster_name 會自動從 root.hcl 中引用（因為有在 inputs 中定義）
   do_region          = "sgp1"
-  kubernetes_version = "1.33.1-do.4"
+  kubernetes_version = "1.33.1-do.5"
   node_pool_name     = "worker-pool"
   node_size          = "s-2vcpu-2gb"
   node_count         = 1

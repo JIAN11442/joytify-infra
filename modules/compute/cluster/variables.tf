@@ -12,7 +12,7 @@ variable "do_region" {
 variable "kubernetes_version" {
   description = "Kubernetes version"
   type        = string
-  default     = "1.33.1-do.4"
+  default     = "1.33.1-do.5"
 }
 
 variable "node_pool_name" {
