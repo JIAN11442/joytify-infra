@@ -46,6 +46,7 @@ inputs = {
   aws_credential_secret_key = dependency.config.outputs.aws_credential_secret_key
 
   ghcr_secret_name = dependency.config.outputs.ghcr_secret_name
+  # github_username is from root.hcl global inputs
 
   cluster_endpoint       = dependency.cluster.outputs.cluster_endpoint
   cluster_token          = dependency.cluster.outputs.cluster_token

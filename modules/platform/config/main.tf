@@ -16,5 +16,6 @@ resource "aws_secretsmanager_secret_version" "update_secrets" {
     API_SERVICE_NAME = local.services.api_service_name
     WEB_SERVICE_PORT = local.services.web_service_port
     API_SERVICE_PORT = local.services.api_service_port
+
   }))
 }

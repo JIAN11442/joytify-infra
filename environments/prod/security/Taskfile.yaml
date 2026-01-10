@@ -4,6 +4,8 @@ env:
   DIR: "{{.TASKFILE_DIR}}"
   CERTIFICATES_MANAGER_DIR: "{{.DIR}}/certificates/manager"
   CERTIFICATES_ISSUERS_DIR: "{{.DIR}}/certificates/issuers"
+  CERTIFICATES_RESTORE_DIR: "{{.DIR}}/certificates/restore"
+  CERTIFICATES_BACKUP_DIR: "{{.DIR}}/certificates/backup"
   CREDENTIALS_DIR: "{{.DIR}}/credentials"
 
 tasks:
@@ -90,6 +92,86 @@ tasks:
       - terragrunt output --non-interactive
     summary: |
       Displays all outputs from Cert Issuers
+
+  certificates:restore:plan:
+    desc: "📋 Plan Cert Restore changes"
+    dir: "{{.CERTIFICATES_RESTORE_DIR}}"
+    cmds:
+      - terragrunt plan --non-interactive
+    summary: |
+      Shows planned changes for Cert Restore
+
+  certificates:restore:validate:
+    desc: "✅ Validate Cert Restore configuration"
+    dir: "{{.CERTIFICATES_RESTORE_DIR}}"
+    cmds:
+      - terragrunt validate --non-interactive
+    summary: |
+      Validates the Cert Restore configuration
+
+  certificates:restore:deploy:
+    desc: "🚀 Deploy only Cert Restore"
+    dir: "{{.CERTIFICATES_RESTORE_DIR}}"
+    cmds:
+      - terragrunt apply --non-interactive -auto-approve
+    summary: |
+      Deploys only the Cert Restore component
+
+  certificates:restore:destroy:
+    desc: "💥 Destroy only Cert Restore"
+    dir: "{{.CERTIFICATES_RESTORE_DIR}}"
+    cmds:
+      - terragrunt destroy --non-interactive -auto-approve
+    summary: |
+      Destroys only the Cert Restore component
+
+  certificates:restore:output:
+    desc: "📤 Show Cert Restore outputs"
+    dir: "{{.CERTIFICATES_RESTORE_DIR}}"
+    cmds:
+      - terragrunt output --non-interactive
+    summary: |
+      Displays all outputs from Cert Restore
+
+  certificates:backup:plan:
+    desc: "📋 Plan Cert Backup changes"
+    dir: "{{.CERTIFICATES_BACKUP_DIR}}"
+    cmds:
+      - terragrunt plan --non-interactive
+    summary: |
+      Shows planned changes for Cert Backup
+
+  certificates:backup:validate:
+    desc: "✅ Validate Cert Backup configuration"
+    dir: "{{.CERTIFICATES_BACKUP_DIR}}"
+    cmds:
+      - terragrunt validate --non-interactive
+    summary: |
+      Validates the Cert Backup configuration
+
+  certificates:backup:deploy:
+    desc: "🚀 Deploy only Cert Backup"
+    dir: "{{.CERTIFICATES_BACKUP_DIR}}"
+    cmds:
+      - terragrunt apply --non-interactive -auto-approve
+    summary: |
+      Deploys only the Cert Backup component
+
+  certificates:backup:destroy:
+    desc: "💥 Destroy only Cert Backup"
+    dir: "{{.CERTIFICATES_BACKUP_DIR}}"
+    cmds:
+      - terragrunt destroy --non-interactive -auto-approve
+    summary: |
+      Destroys only the Cert Backup component
+
+  certificates:backup:output:
+    desc: "📤 Show Cert Backup outputs"
+    dir: "{{.CERTIFICATES_BACKUP_DIR}}"
+    cmds:
+      - terragrunt output --non-interactive
+    summary: |
+      Displays all outputs from Cert Backup
 
   credentials:plan:
     desc: "📋 Plan Credentials changes"

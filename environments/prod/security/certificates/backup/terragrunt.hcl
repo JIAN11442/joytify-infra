@@ -6,12 +6,11 @@ locals {
   modules_path   = find_in_parent_folders("modules/")
   envs_prod_path = find_in_parent_folders("environments/prod/")
 
-  source_path       = "${local.modules_path}/platform/argocd"
-  cluster_path      = "${local.envs_prod_path}/compute/cluster"
-  config_path       = "${local.envs_prod_path}/platform/config"
-  cert_issuers_path = "${local.envs_prod_path}/security/certificates/issuers"
-  secrets_path      = "${local.envs_prod_path}/platform/secrets"
+  source_path  = "${local.modules_path}/security/certificates/backup"
+  cluster_path = "${local.envs_prod_path}/compute/cluster"
+  config_path  = "${local.envs_prod_path}/platform/config"
 }
+
 
 terraform {
   source = "${local.source_path}"
@@ -32,28 +31,22 @@ dependency "config" {
 
   mock_outputs = {
     argocd_namespace = "argocd"
-    argocd_domain    = "argocd.127.0.0.1.nip.io"
+    api_namespace    = "api"
+    web_namespace    = "web"
   }
 }
 
-dependency "cert_issuers" {
-  config_path = "${local.cert_issuers_path}"
-
-  mock_outputs = {}
-}
-
-dependency "secrets" {
-  config_path = "${local.secrets_path}"
-
-  mock_outputs = {}
-}
-
 inputs = {
-  argocd_name         = "argocd"
-  argocd_namespace    = dependency.config.outputs.argocd_namespace
-  argocd_version      = "4.5.2"
-  argocd_domain       = dependency.config.outputs.argocd_domain
-  argocd_service_port = 443
+  aws_secret_name = "JOYTIFY_INFRA_ENVS"
+
+  argocd_tls_secret_name = "argocd-tls-secret"
+  argocd_namespace       = dependency.config.outputs.argocd_namespace
+
+  api_tls_secret_name = "api-tls-secret"
+  api_namespace       = dependency.config.outputs.api_namespace
+
+  web_tls_secret_name = "web-tls-secret"
+  web_namespace       = dependency.config.outputs.web_namespace
 
   cluster_endpoint       = dependency.cluster.outputs.cluster_endpoint
   cluster_token          = dependency.cluster.outputs.cluster_token

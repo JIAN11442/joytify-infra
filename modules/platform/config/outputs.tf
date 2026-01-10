@@ -56,6 +56,14 @@ output "argocd_namespace" {
   value = local.namespaces.argocd_namespace
 }
 
+output "cert_manager_namespace" {
+  value = local.namespaces.cert_manager_namespace
+}
+
+output "external_secrets_namespace" {
+  value = local.namespaces.external_secrets_namespace
+}
+
 
 # KEYS
 output "aws_credential_id_key" {
@@ -73,6 +81,44 @@ output "argocd_repo_token" {
   sensitive = true
 }
 
+# TLS CERTIFICATES
+output "argocd_tls_cert" {
+  description = "ArgoCD TLS certificate from backup (base64 encoded)"
+  value       = local.argocd_tls_cert
+  sensitive   = true
+}
+
+output "argocd_tls_key" {
+  description = "ArgoCD TLS private key from backup (base64 encoded)"
+  value       = local.argocd_tls_key
+  sensitive   = true
+}
+
+# API TLS
+output "api_tls_cert" {
+  description = "API TLS certificate from backup (base64 encoded)"
+  value       = local.api_tls_cert
+  sensitive   = true
+}
+
+output "api_tls_key" {
+  description = "API TLS private key from backup (base64 encoded)"
+  value       = local.api_tls_key
+  sensitive   = true
+}
+
+# Web TLS
+output "web_tls_cert" {
+  description = "Web TLS certificate from backup (base64 encoded)"
+  value       = local.web_tls_cert
+  sensitive   = true
+}
+
+output "web_tls_key" {
+  description = "Web TLS private key from backup (base64 encoded)"
+  value       = local.web_tls_key
+  sensitive   = true
+}
 
 # OTHER
 output "certificate_email" {
@@ -84,3 +130,5 @@ output "cloudflare_zone_id" {
   value     = local.cloudflare_zone_id
   sensitive = true
 }
+
+

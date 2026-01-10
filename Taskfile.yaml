@@ -22,10 +22,12 @@ tasks:
       - task: security:credentials:plan
       - task: security:certificates:manager:plan
       - task: security:certificates:issuers:plan
+      - task: security:certificates:restore:plan
       - task: platform:secrets:plan
-      - task: platform:argocd:plan
-      - task: networking:ingress:rules:plan
-      - task: platform:gitops:plan
+      - task: platform:argocd:service:plan
+      - task: platform:argocd:ingress:plan
+      - task: platform:argocd:applications:plan
+      - task: security:certificates:backup:plan
     summary: |
       Shows planned changes for all infrastructure layers.
 
@@ -39,10 +41,12 @@ tasks:
       - task: security:credentials:validate
       - task: security:certificates:manager:validate
       - task: security:certificates:issuers:validate
+      - task: security:certificates:restore:validate
       - task: platform:secrets:validate
-      - task: platform:argocd:validate
-      - task: networking:ingress:rules:validate
-      - task: platform:gitops:validate
+      - task: platform:argocd:service:validate
+      - task: platform:argocd:ingress:validate
+      - task: platform:argocd:applications:validate
+      - task: security:certificates:backup:validate
     summary: |
       Validates all infrastructure layer configurations.
 
@@ -58,12 +62,19 @@ tasks:
       - task: security:certificates:manager:deploy
       - task: security:certificates:issuers:deploy
       - task: platform:secrets:deploy
-      - task: platform:argocd:deploy
-      - task: networking:ingress:rules:deploy
-      - echo "⏳ Waiting 30s for ArgoCD TLS certificate..."
-      - sleep 30
+      - task: platform:argocd:service:deploy
+      - task: security:certificates:restore:deploy
+      - task: platform:argocd:ingress:deploy
+      - echo "⏳ Waiting 60s for ArgoCD TLS certificate..."
+      - sleep 60
       - echo "✅ Continue deployment"
-      - task: platform:gitops:deploy
+      - task: platform:argocd:applications:deploy
+      - echo "⏳ Waiting 60s for API/Web TLS certificates..."
+      - sleep 60
+      - echo "💾 Backing up all TLS certificates..."
+      - task: security:certificates:backup:deploy
+      - echo "✅ Joytify deployment complete!"
+
     summary: |
       Deploys the complete infrastructure stack in the correct order:
       1. Bootstrap Kubernetes cluster
@@ -75,16 +86,22 @@ tasks:
       7. Deploy security certificates manager
       8. Deploy security certificates issuers
       9. Deploy external secrets
-      10. Deploy ArgoCD ingress controller
-      11. Deploy ArgoCD ingress rules
-      12. Deploy ArgoCD github repository and applications
+      10. Deploy ArgoCD service
+      11. Restore TLS certificates from backup
+      12. Deploy ArgoCD ingress
+      13. Wait for ArgoCD certificate (60s)
+      14. Deploy ArgoCD applications
+      15. Wait for API/Web certificates (60s)
+      16. Backup all TLS certificates to AWS Secrets Manager
 
   all:destroy:
     desc: "💥 Destroy entire infrastructure stack"
     cmds:
-      - task: platform:gitops:destroy
-      - task: networking:ingress:rules:destroy
-      - task: platform:argocd:destroy
+      - task: platform:argocd:applications:destroy
+      - task: platform:argocd:ingress:destroy
+      - task: security:certificates:backup:destroy
+      - task: security:certificates:restore:destroy
+      - task: platform:argocd:service:destroy
       - task: platform:secrets:destroy
       - task: security:certificates:issuers:destroy
       - task: security:certificates:manager:destroy
@@ -97,19 +114,21 @@ tasks:
       - task: cleanup-state
     summary: |
       Destroys the complete infrastructure stack in reverse order:
-      1. Destroy ArgoCD github repository and applications
-      2. Destroy ArgoCD ingress rules
-      3. Destroy ArgoCD ingress controller
-      4. Destroy external secrets
-      5. Destroy security certificates issuers
-      6. Destroy security certificates manager
-      7. Destroy security credentials
-      8. Destroy DNS
-      9. Destroy ingress controller
-      10. Destroy platform configuration
-      11. Initial cleanup
-      12. Destroy Kubernetes cluster
-      13. Clean up Terraform backend resources
+      1. Destroy ArgoCD applications
+      2. Destroy ArgoCD ingress
+      3. Destroy certificate backup
+      4. Destroy certificate restore
+      5. Destroy ArgoCD service
+      6. Destroy external secrets
+      7. Destroy security certificates issuers
+      8. Destroy security certificates manager
+      9. Destroy security credentials
+      10. Destroy DNS
+      11. Destroy Ingress controller
+      12. Destroy platform configuration
+      13. Cleanup kubeconfig
+      14. Destroy Kubernetes cluster
+      15. Clean up Terraform backend resources
 
   all:output:
     desc: "📤 Show all infrastructure outputs"
@@ -121,10 +140,12 @@ tasks:
       - task: security:credentials:output
       - task: security:certificates:manager:output
       - task: security:certificates:issuers:output
+      - task: security:certificates:restore:output
+      - task: security:certificates:backup:output
       - task: platform:secrets:output
-      - task: platform:argocd:output
-      - task: networking:ingress:rules:output
-      - task: platform:gitops:output
+      - task: platform:argocd:applications:output
+      - task: platform:argocd:ingress:output
+      - task: platform:argocd:service:output
     summary: |
       Displays all outputs from all infrastructure layers.
 

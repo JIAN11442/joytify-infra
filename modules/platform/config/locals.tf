@@ -31,15 +31,30 @@ locals {
 
   # Namespace configuration
   namespaces = {
+    # Application namespaces
     web_namespace    = "web"
     api_namespace    = "api"
     argocd_namespace = "argocd"
+
+    # System namespaces
+    cert_manager_namespace     = "cert-manager"
+    external_secrets_namespace = "external-secrets"
   }
 
   # Token configuration
   tokens = {
     argocd_repo_token = local.existing_secrets["ARGOCD_REPO_TOKEN"]
   }
+
+  # TLS Certificates (if exists)
+  argocd_tls_cert = try(local.existing_secrets["ARGOCD_TLS_CERT"], null)
+  argocd_tls_key  = try(local.existing_secrets["ARGOCD_TLS_KEY"], null)
+
+  api_tls_cert = try(local.existing_secrets["API_TLS_CERT"], null)
+  api_tls_key  = try(local.existing_secrets["API_TLS_KEY"], null)
+
+  web_tls_cert = try(local.existing_secrets["WEB_TLS_CERT"], null)
+  web_tls_key  = try(local.existing_secrets["WEB_TLS_KEY"], null)
 
   # Other configuration
   certificate_email = local.existing_secrets["CERTIFICATE_EMAIL"]

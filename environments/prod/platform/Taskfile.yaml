@@ -4,8 +4,9 @@ env:
   DIR: "{{.TASKFILE_DIR}}"
   CONFIG_DIR: "{{.DIR}}/config"
   SECRETS_DIR: "{{.DIR}}/secrets"
-  ARGOCD_DIR: "{{.DIR}}/argocd"
-  GITOPS_DIR: "{{.DIR}}/gitops"
+  ARGOCD_SERVICE_DIR: "{{.DIR}}/argocd/service"
+  ARGOCD_INGRESS_DIR: "{{.DIR}}/argocd/ingress"
+  ARGOCD_APPLICATIONS_DIR: "{{.DIR}}/argocd/applications"
 
 tasks:
   # =============================================================================
@@ -92,82 +93,117 @@ tasks:
     summary: |
       Displays all outputs from External Secrets
 
-  argocd:plan:
-    desc: "📋 Plan ArgoCD changes"
-    dir: "{{.ARGOCD_DIR}}"
-    cmds:
-      - terragrunt plan --non-interactive
-    summary: |
-      Shows planned changes for ArgoCD.
-
-  argocd:validate:
-    desc: "✅ Validate ArgoCD configuration"
-    dir: "{{.ARGOCD_DIR}}"
+  # ArgoCD Service
+  argocd:service:validate:
+    desc: "✅ Validate ArgoCD Service configuration"
+    dir: "{{.ARGOCD_SERVICE_DIR}}"
     cmds:
       - terragrunt validate --non-interactive
     summary: |
-      Validates the ArgoCD configuration.
+      Validates the ArgoCD Service configuration
 
-  argocd:deploy:
-    desc: "🚀 Deploy only ArgoCD"
-    dir: "{{.ARGOCD_DIR}}"
+  argocd:service:deploy:
+    desc: "🚀 Deploy only ArgoCD Service"
+    dir: "{{.ARGOCD_SERVICE_DIR}}"
     cmds:
       - terragrunt apply --non-interactive -auto-approve
     summary: |
-      Deploys only the ArgoCD component.
+      Deploys only the ArgoCD Service component
 
-  argocd:destroy:
-    desc: "💥 Destroy only ArgoCD"
-    dir: "{{.ARGOCD_DIR}}"
+  argocd:service:destroy:
+    desc: "💥 Destroy only ArgoCD Service"
+    dir: "{{.ARGOCD_SERVICE_DIR}}"
     cmds:
       - terragrunt destroy --non-interactive -auto-approve
     summary: |
-      Destroys only the ArgoCD component.
+      Destroys only the ArgoCD Service component
 
-  argocd:output:
-    desc: "📤 Show ArgoCD outputs"
-    dir: "{{.ARGOCD_DIR}}"
+  argocd:service:output:
+    desc: "📤 Show ArgoCD Service outputs"
+    dir: "{{.ARGOCD_SERVICE_DIR}}"
     cmds:
       - terragrunt output --non-interactive
     summary: |
-      Displays all outputs from ArgoCD.
+      Displays all outputs from ArgoCD Service
 
-  gitops:plan:
-    desc: "📋 Plan GitOps changes"
-    dir: "{{.GITOPS_DIR}}"
+  # ArgoCD Ingress
+  argocd:ingress:plan:
+    desc: "📋 Plan ArgoCD Ingress changes"
+    dir: "{{.ARGOCD_INGRESS_DIR}}"
     cmds:
       - terragrunt plan --non-interactive
     summary: |
-      Shows planned changes for GitOps
+      Shows planned changes for ArgoCD Ingress
 
-  gitops:validate:
-    desc: "✅ Validate GitOps configuration"
-    dir: "{{.GITOPS_DIR}}"
+  argocd:ingress:validate:
+    desc: "✅ Validate ArgoCD Ingress configuration"
+    dir: "{{.ARGOCD_INGRESS_DIR}}"
     cmds:
       - terragrunt validate --non-interactive
     summary: |
-      Validates the GitOps configuration
+      Validates the ArgoCD Ingress configuration
 
-  gitops:deploy:
-    desc: "🚀 Deploy only GitOps"
-    dir: "{{.GITOPS_DIR}}"
+  argocd:ingress:deploy:
+    desc: "🚀 Deploy only ArgoCD Ingress"
+    dir: "{{.ARGOCD_INGRESS_DIR}}"
     cmds:
       - terragrunt apply --non-interactive -auto-approve
     summary: |
-      Deploys only the GitOps component
+      Deploys only the ArgoCD Ingress component
 
-  gitops:destroy:
-    desc: "💥 Destroy only GitOps"
-    dir: "{{.GITOPS_DIR}}"
+  argocd:ingress:destroy:
+    desc: "💥 Destroy only ArgoCD Ingress"
+    dir: "{{.ARGOCD_INGRESS_DIR}}"
     cmds:
       - terragrunt destroy --non-interactive -auto-approve
     summary: |
-      Destroys only the GitOps component
+      Destroys only the ArgoCD Ingress component
 
-  gitops:output:
-    desc: "📤 Show GitOps outputs"
-    dir: "{{.GITOPS_DIR}}"
+  argocd:ingress:output:
+    desc: "📤 Show ArgoCD Ingress outputs"
+    dir: "{{.ARGOCD_INGRESS_DIR}}"
     cmds:
       - terragrunt output --non-interactive
     summary: |
-      Displays all outputs from GitOps
+      Displays all outputs from ArgoCD Ingress
+
+  # ArgoCD Applications
+  argocd:applications:plan:
+    desc: "📋 Plan ArgoCD Applications changes"
+    dir: "{{.ARGOCD_APPLICATIONS_DIR}}"
+    cmds:
+      - terragrunt plan --non-interactive
+    summary: |
+      Shows planned changes for ArgoCD Applications
+
+  argocd:applications:validate:
+    desc: "✅ Validate ArgoCD Applications configuration"
+    dir: "{{.ARGOCD_APPLICATIONS_DIR}}"
+    cmds:
+      - terragrunt validate --non-interactive
+    summary: |
+      Validates the ArgoCD Applications configuration
+
+  argocd:applications:deploy:
+    desc: "🚀 Deploy only ArgoCD Applications"
+    dir: "{{.ARGOCD_APPLICATIONS_DIR}}"
+    cmds:
+      - terragrunt apply --non-interactive -auto-approve
+    summary: |
+      Deploys only the ArgoCD Applications component
+
+  argocd:applications:destroy:
+    desc: "💥 Destroy only ArgoCD Applications"
+    dir: "{{.ARGOCD_APPLICATIONS_DIR}}"
+    cmds:
+      - terragrunt destroy --non-interactive -auto-approve
+    summary: |
+      Destroys only the ArgoCD Applications component
+
+  argocd:applications:output:
+    desc: "📤 Show ArgoCD Applications outputs"
+    dir: "{{.ARGOCD_APPLICATIONS_DIR}}"
+    cmds:
+      - terragrunt output --non-interactive
+    summary: |
+      Displays all outputs from ArgoCD Applications

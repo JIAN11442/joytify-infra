@@ -8,6 +8,7 @@ locals {
 
   source_path  = "${local.modules_path}/platform/secrets"
   cluster_path = "${local.envs_prod_path}/compute/cluster"
+  config_path  = "${local.envs_prod_path}/platform/config"
 }
 
 terraform {
@@ -24,9 +25,17 @@ dependency "cluster" {
   }
 }
 
+dependency "config" {
+  config_path = "${local.config_path}"
+
+  mock_outputs = {
+    external_secrets_namespace = "external-secrets"
+  }
+}
+
 inputs = {
   external_secrets_name      = "external-secrets"
-  external_secrets_namespace = "external-secrets"
+  external_secrets_namespace = dependency.config.outputs.external_secrets_namespace
 
   cluster_endpoint       = dependency.cluster.outputs.cluster_endpoint
   cluster_token          = dependency.cluster.outputs.cluster_token
