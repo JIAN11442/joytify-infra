@@ -28,9 +28,11 @@
       - [Step 7: Certificate Manager](#step-7-certificate-manager)
       - [Step 8: Certificate Issuers](#step-8-certificate-issuers)
       - [Step 9: External Secrets](#step-9-external-secrets)
-      - [Step 10: ArgoCD Platform](#step-10-argocd-platform)
-      - [Step 11: ArgoCD Ingress Rules](#step-11-argocd-ingress-rules)
-      - [Step 12: GitOps Applications](#step-12-gitops-applications)
+      - [Step 10: ArgoCD Service](#step-10-argocd-service)
+      - [Step 11: Certificate Restore](#step-11-certificate-restore)
+      - [Step 12: ArgoCD Ingress](#step-12-argocd-ingress)
+      - [Step 13: GitOps Applications](#step-13-gitops-applications)
+      - [Step 14: Certificate Backup](#step-14-certificate-backup)
   - [Access ArgoCD](#access-argocd)
 - [⚙️ Configuration & Scaling](#️-configuration--scaling)
 - [📊 Monitoring & Status](#-monitoring--status)
@@ -82,17 +84,23 @@ graph TB
             ARGOCD[🚀 ArgoCD Server<br/>GitOps Platform & Web UI]
             APIAPP[📱 API Application<br/>Backend Deployment]
             WEBAPP[🌐 Web Application<br/>Frontend Deployment]
+            ARGOTLS[🔐 TLS Secret<br/>argocd-tls-secret]
         end
 
         subgraph "api namespace"
             BACKEND[🔧 Backend API<br/>Node.js Service]
             APISECRETS[🔐 K8s Secrets<br/>AWS & GHCR Credentials]
+            APITLS[🔐 TLS Secret<br/>api-tls-secret]
         end
 
         subgraph "web namespace"
             FRONTEND[🎨 Frontend Web<br/>React Application]
             WEBSECRETS[🔐 K8s Secrets<br/>GHCR Credentials]
+            WEBTLS[🔐 TLS Secret<br/>web-tls-secret]
         end
+
+        RESTORE[🔄 Certificate Restore<br/>Terraform Module]
+        BACKUP[💾 Certificate Backup<br/>Terraform Module]
 
     end
 
@@ -108,9 +116,19 @@ graph TB
     LB -->|External IP| CF
 
     %% === 3. SECURITY LAYER: SSL Certificates ===
+    AWS -.->|Restore Certs| RESTORE
+    RESTORE -.->|Pre-create| ARGOTLS
+    RESTORE -.->|Pre-create| APITLS
+    RESTORE -.->|Pre-create| WEBTLS
     ISSUERS -.->|Provides Issuers| CERTMGR
-    CERTMGR -.->|Manages TLS| INGRESS
+    CERTMGR -.->|Issues/Renews| ARGOTLS
+    CERTMGR -.->|Issues/Renews| APITLS
+    CERTMGR -.->|Issues/Renews| WEBTLS
     INGRESS -.->|SSL Config| NGINX
+    ARGOTLS -.->|Read| BACKUP
+    APITLS -.->|Read| BACKUP
+    WEBTLS -.->|Read| BACKUP
+    BACKUP -.->|Save Certs| AWS
 
     %% === 4. CONFIGURATION: Secrets & Config Management ===
     AWS -..->|Platform Config| ARGOCD
@@ -134,8 +152,10 @@ graph TB
     class NGINX,INGRESS ingress
     class LB external
     class CERTMGR,ISSUERS cert
+    class RESTORE,BACKUP cert
     class ESO secrets
     class ARGOCD,APIAPP,WEBAPP argo
+    class ARGOTLS,APITLS,WEBTLS secrets
     class BACKEND,FRONTEND app
     class APISECRETS,WEBSECRETS secrets
 
@@ -155,16 +175,26 @@ graph TB
     linkStyle 7 stroke:#c62828,stroke-width:2px,stroke-dasharray:5 5
     linkStyle 8 stroke:#c62828,stroke-width:2px,stroke-dasharray:5 5
     linkStyle 9 stroke:#c62828,stroke-width:2px,stroke-dasharray:5 5
+    linkStyle 10 stroke:#c62828,stroke-width:2px,stroke-dasharray:5 5
+    linkStyle 11 stroke:#c62828,stroke-width:2px,stroke-dasharray:5 5
+    linkStyle 12 stroke:#c62828,stroke-width:2px,stroke-dasharray:5 5
+    linkStyle 13 stroke:#c62828,stroke-width:2px,stroke-dasharray:5 5
+    linkStyle 14 stroke:#c62828,stroke-width:2px,stroke-dasharray:5 5
+    linkStyle 15 stroke:#c62828,stroke-width:2px,stroke-dasharray:5 5
+    linkStyle 16 stroke:#c62828,stroke-width:2px,stroke-dasharray:5 5
+    linkStyle 17 stroke:#c62828,stroke-width:2px,stroke-dasharray:5 5
+    linkStyle 18 stroke:#c62828,stroke-width:2px,stroke-dasharray:5 5
+    linkStyle 19 stroke:#c62828,stroke-width:2px,stroke-dasharray:5 5
 
     %% 4. Configuration Layer (Purple - dotted)
-    linkStyle 10 stroke:#6a1b9a,stroke-width:2px,stroke-dasharray:2 2
-    linkStyle 11 stroke:#6a1b9a,stroke-width:2px,stroke-dasharray:2 2
-    linkStyle 12 stroke:#6a1b9a,stroke-width:2px,stroke-dasharray:2 2
-    linkStyle 13 stroke:#6a1b9a,stroke-width:2px,stroke-dasharray:2 2
-    linkStyle 14 stroke:#6a1b9a,stroke-width:2px,stroke-dasharray:2 2
-    linkStyle 15 stroke:#6a1b9a,stroke-width:2px,stroke-dasharray:2 2
-    linkStyle 16 stroke:#6a1b9a,stroke-width:2px,stroke-dasharray:2 2
-    linkStyle 17 stroke:#6a1b9a,stroke-width:2px,stroke-dasharray:2 2
+    linkStyle 20 stroke:#6a1b9a,stroke-width:2px,stroke-dasharray:2 2
+    linkStyle 21 stroke:#6a1b9a,stroke-width:2px,stroke-dasharray:2 2
+    linkStyle 22 stroke:#6a1b9a,stroke-width:2px,stroke-dasharray:2 2
+    linkStyle 23 stroke:#6a1b9a,stroke-width:2px,stroke-dasharray:2 2
+    linkStyle 24 stroke:#6a1b9a,stroke-width:2px,stroke-dasharray:2 2
+    linkStyle 25 stroke:#6a1b9a,stroke-width:2px,stroke-dasharray:2 2
+    linkStyle 26 stroke:#6a1b9a,stroke-width:2px,stroke-dasharray:2 2
+    linkStyle 27 stroke:#6a1b9a,stroke-width:2px,stroke-dasharray:2 2
 ```
 
 The architecture diagram above shows the complete infrastructure stack this repository creates:
@@ -183,8 +213,11 @@ The architecture diagram above shows the complete infrastructure stack this repo
 
 ### **Security Layer (Red Flow)**
 
+- **Certificate Restore**: Restores TLS certificates from AWS Secrets Manager backup (if exists)
 - **cert-manager**: Automated SSL certificate provisioning and renewal
-- **Let's Encrypt Integration**: Free SSL certificates with automatic renewal
+- **Let's Encrypt Integration**: Free SSL certificates (only when no backup exists)
+- **Certificate Backup**: Backs up all TLS certificates to AWS Secrets Manager after deployment
+- **Rate Limit Protection**: Avoids Let's Encrypt 5 certs/week limit by reusing backed-up certificates
 - **TLS Configuration**: Secure HTTPS access for all services
 
 ### **Configuration Management (Purple Flow)**
@@ -340,9 +373,11 @@ task security:credentials:deploy
 task security:certificates:manager:deploy
 task security:certificates:issuers:deploy
 task platform:secrets:deploy
-task platform:argocd:deploy
-task networking:ingress:rules:deploy
-task platform:gitops:deploy
+task platform:argocd:service:deploy
+task security:certificates:restore:deploy
+task platform:argocd:ingress:deploy
+task platform:argocd:applications:deploy
+task security:certificates:backup:deploy
 ```
 
 ##### Step 1: Compute Layer
@@ -435,36 +470,57 @@ task platform:secrets:deploy
 - Prepares infrastructure for API (backend) to access AWS Secrets Manager
 - Enables secure credential injection into backend pods (frontend secrets are injected during image build)
 
-##### Step 10: ArgoCD Platform
+##### Step 10: ArgoCD Service
 
 ```bash
-task platform:argocd:deploy
+task platform:argocd:service:deploy
 ```
 
 - Deploys ArgoCD server and controller for GitOps continuous deployment
 - Configures ArgoCD domain and RBAC (admin/devops roles)
-- Sets up ArgoCD as ClusterIP service (ingress rules configured separately)
+- Sets up ArgoCD as ClusterIP service (ingress configured separately)
 
-##### Step 11: ArgoCD Ingress Rules
+##### Step 11: Certificate Restore
 
 ```bash
-task networking:ingress:rules:deploy
+task security:certificates:restore:deploy
+```
+
+- Restores TLS certificates from AWS Secrets Manager if backup exists
+- Pre-creates Kubernetes TLS secrets before ingress deployment
+- Skips Let's Encrypt certificate requests when valid backup exists
+- Enables daily cluster rebuilds without hitting rate limits (5 certs/week)
+
+##### Step 12: ArgoCD Ingress
+
+```bash
+task platform:argocd:ingress:deploy
 ```
 
 - Creates Kubernetes Ingress resource for ArgoCD with SSL/TLS configuration
-- Configures NGINX ingress with cert-manager for automatic SSL certificate generation
+- Uses restored certificate if available, otherwise cert-manager requests new certificate
 - Enables HTTPS access to ArgoCD web interface
-- Note: Application ingress rules are created by joytify-helm
 
-##### Step 12: GitOps Applications
+##### Step 13: GitOps Applications
 
 ```bash
-task platform:gitops:deploy
+task platform:argocd:applications:deploy
 ```
 
 - Creates ArgoCD Application resources for joytify-helm repository
 - Configures GitOps continuous deployment for API and Web applications
-- Enables automatic deployment when joytify-helm repository changes
+- Triggers deployment of API and Web ingress resources with TLS
+
+##### Step 14: Certificate Backup
+
+```bash
+task security:certificates:backup:deploy
+```
+
+- Backs up all TLS certificates (ArgoCD, API, Web) to AWS Secrets Manager
+- Runs after applications are deployed and certificates are issued
+- Only updates when certificates change (automatic Terraform state comparison)
+- Enables certificate restoration on next cluster rebuild
 
 ### Access ArgoCD
 
@@ -472,7 +528,7 @@ After successful deployment, you can access ArgoCD using:
 
 ```bash
 # Get ArgoCD domain and credentials
-task platform:argocd:output
+task platform:argocd:service:output
 
 # Or get password directly
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d
@@ -486,7 +542,7 @@ kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.pas
 
 **Expected ArgoCD Applications:**
 
-After GitOps setup (Step 12), you should see these applications in ArgoCD:
+After GitOps setup (Step 13), you should see these applications in ArgoCD:
 
 ![ArgoCD API Application](https://mern-joytify-bucket-yj.s3.ap-northeast-1.amazonaws.com/readme/argocd-api.png)
 
@@ -550,7 +606,7 @@ Then redeploy: `task networking:ingress:controller:deploy`
 
 Set appropriate resource limits to prevent resource contention. Edit the respective `values.yaml` files:
 
-**ArgoCD** (`modules/platform/argocd/values.yaml`):
+**ArgoCD** (`modules/platform/argocd/service/values.yaml`):
 
 ```yaml
 server:
@@ -574,7 +630,7 @@ kubectl get svc -A
 # Platform services
 kubectl get pods -n argocd
 kubectl get pods -n cert-manager
-kubectl get pods -n external-secrets-system
+kubectl get pods -n external-secrets
 kubectl get pods -n ingress-nginx
 
 # Ingress and SSL
@@ -593,7 +649,7 @@ kubectl describe externalsecrets -A
 
 # Task commands
 task status
-task platform:argocd:output
+task platform:argocd:service:output
 ```
 
 ## 💥 Destroy Infrastructure
